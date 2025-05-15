@@ -1,0 +1,93 @@
+type Query {
+  list(listId: ID!): ListOutput @hasReaderPermission
+  lists(first: Int, after: ID): ListConnection! @hasAdminPermission
+  user(listId: ID!, userId: String!): UserOutput @hasWriterPermission
+  users(listId: ID!): ListOutput @hasWriterPermission
+  todo(listId: ID!, todoId: ID!): TodoOutput @hasReaderPermission
+  todos(listId: ID!, first: Int, after: ID): TodoConnection! @hasReaderPermission
+}
+
+type Mutation {
+  createList(list: List!): ListOutput @hasWriterPermission
+  addUserToList(listId: ID!, user: User!): String! @hasWriterPermission
+  createTodo(listId: ID!, todo: Todo): TodoOutput @hasWriterPermission
+  updateListName(listId: ID!, input: List): ListOutput @hasWriterPermission
+  updateTodo(listId: ID!, todoId: ID!, todo: UpdateTodoInput): TodoOutput @hasWriterPermission
+  deleteList(listId: ID!): ListOutput @hasWriterPermission
+  removeUserFromList(listId: ID!, userId: String!): UserOutput @hasWriterPermission
+  deleteTodo(listId: ID!, todoId: ID!): TodoOutput @hasWriterPermission
+  assignUserToTodo(listId: ID!, todoId: ID!): String! @hasWriterPermission
+  changeTodoStatus(listId: ID!, todoId: ID!): String! @hasWriterPermission
+}
+
+input List {
+  name: String!
+}
+
+input User {
+  username: String!
+}
+
+input Todo {
+  name: String!
+  description: String!
+  deadline: Time!
+  priority: String!
+}
+
+input UpdateTodoInput {
+  name: String
+  description: String
+  deadline: Time
+  priority: String
+}
+
+type ListOutput {
+  id: ID!
+  name: String!
+  owner: String!
+  users: [String!]! @hasWriterPermission
+  todos: [TodoOutput!]!
+}
+
+type UserOutput {
+  listId: ID!
+  listName: String!
+  username: String!
+  isOwner: Boolean!
+}
+
+type TodoOutput {
+  id: ID!
+  listId: ID!
+  name: String!
+  description: String!
+  deadline: Time!
+  assignee: String!
+  status: String!
+  priority: String!
+}
+
+type ListConnection {
+  totalCount: Int
+  lists: [ListOutput]
+  pageInfo: PageInfo!
+}
+
+type TodoConnection {
+  totalCount: Int
+  todos: [TodoOutput]
+  pageInfo: PageInfo!
+}
+
+type PageInfo {
+  startCursor: ID
+  endCursor: ID
+  hasNextPage: Boolean!
+}
+
+scalar Time
+
+directive @hasReaderPermission on FIELD_DEFINITION
+directive @hasWriterPermission on FIELD_DEFINITION
+directive @hasAdminPermission on FIELD_DEFINITION
